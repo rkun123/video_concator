@@ -1,0 +1,88 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+        cache: true
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v ./...
+
+  build:
+    name: Build for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+        cache: true
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Build for Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        go build -o video_concator-linux-amd64 .
+        chmod +x video_concator-linux-amd64
+
+    - name: Build for Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        go build -o video_concator-windows-amd64.exe .
+
+    - name: Build for macOS
+      if: matrix.os == 'macos-latest'
+      run: |
+        go build -o video_concator-darwin-amd64 .
+        chmod +x video_concator-darwin-amd64
+
+    - name: Upload Linux artifact
+      if: matrix.os == 'ubuntu-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: video_concator-linux-amd64
+        path: video_concator-linux-amd64
+
+    - name: Upload Windows artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: video_concator-windows-amd64.exe
+        path: video_concator-windows-amd64.exe
+
+    - name: Upload macOS artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: video_concator-darwin-amd64
+        path: video_concator-darwin-amd64
