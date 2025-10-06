@@ -66,6 +66,12 @@ jobs:
         go build -o video_concator-darwin-amd64 .
         chmod +x video_concator-darwin-amd64
 
+    - name: Build for macOS ARM64
+      if: matrix.os == 'macos-latest'
+      run: |
+        GOOS=darwin GOARCH=arm64 go build -o video_concator-darwin-arm64 .
+        chmod +x video_concator-darwin-arm64
+
     - name: Upload Linux artifact
       if: matrix.os == 'ubuntu-latest'
       uses: actions/upload-artifact@v4
@@ -86,3 +92,10 @@ jobs:
       with:
         name: video_concator-darwin-amd64
         path: video_concator-darwin-amd64
+
+    - name: Upload macOS(arm64) artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: video_concator-darwin-arm64
+        path: video_concator-darwin-arm64
